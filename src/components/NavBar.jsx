@@ -1,25 +1,36 @@
 import { useEffect, useState } from "react";
-
 import { navLinks } from "../constants";
+
+// Debounce function to limit scroll event handler
+const debounce = (func, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+};
 
 const NavBar = () => {
   // track if the user has scrolled down the page
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    // create an event listener for when the user scrolls
+    // Create an event listener for when the user scrolls
     const handleScroll = () => {
-      // check if the user has scrolled down at least 10px
-      // if so, set the state to true
       const isScrolled = window.scrollY > 10;
       setScrolled(isScrolled);
     };
 
-    // add the event listener to the window
-    window.addEventListener("scroll", handleScroll);
+    // Debounced scroll handler to limit the frequency of state updates
+    const debouncedHandleScroll = debounce(handleScroll, 100);
 
-    // cleanup the event listener when the component is unmounted
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Add the event listener to the window
+    window.addEventListener("scroll", debouncedHandleScroll);
+
+    // Cleanup the event listener when the component is unmounted
+    return () => {
+      window.removeEventListener("scroll", debouncedHandleScroll);
+    };
   }, []);
 
   return (
@@ -50,6 +61,6 @@ const NavBar = () => {
       </div>
     </header>
   );
-}
+};
 
 export default NavBar;

@@ -1,7 +1,7 @@
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -11,37 +11,33 @@ const AppShowcase = () => {
   const libraryRef = useRef(null);
   const ycDirectoryRef = useRef(null);
 
-  useGSAP(() => {
-    // Animation for the main section
+  // Optimizing GSAP animations by batching them
+  const animateSection = useCallback(() => {
+    // Main section animation
     gsap.fromTo(
       sectionRef.current,
       { opacity: 0 },
       { opacity: 1, duration: 1.5 }
     );
 
-    // Animations for each app showcase
-    const cards = [rydeRef.current, libraryRef.current, ycDirectoryRef.current];
-
-    cards.forEach((card, index) => {
-      gsap.fromTo(
-        card,
-        {
-          y: 50,
-          opacity: 0,
-        },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          delay: 0.3 * (index + 1),
-          scrollTrigger: {
-            trigger: card,
-            start: "top bottom-=100",
-          },
-        }
-      );
+    // Create a timeline for each project animation
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: sectionRef.current,
+        start: "top bottom-=100", // trigger when the section reaches 100px from bottom
+      },
     });
+
+    // Animate each card with stagger
+    tl.fromTo(
+      [rydeRef.current, libraryRef.current, ycDirectoryRef.current],
+      { y: 50, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1, stagger: 0.3 }
+    );
   }, []);
+
+  // Trigger the animation when the component mounts
+  useGSAP(animateSection, []);
 
   return (
     <div id="work" ref={sectionRef} className="app-showcase">
@@ -49,7 +45,7 @@ const AppShowcase = () => {
         <div className="showcaselayout">
           <div ref={rydeRef} className="first-project-wrapper">
             <div className="image-wrapper">
-              <img src="/images/bookstore.jpg" alt="Book Store Interface" />
+              <img src="/images/bookstore.jpg" alt="Book Store Interface" loading="lazy" />
             </div>
             <div className="text-content">
               <h2>
@@ -57,10 +53,10 @@ const AppShowcase = () => {
                 called bibliophiles.
               </h2>
               <button type="button">
-                  <div className="cta-button group hover:bg-gray-400 text-black">
-                    <a href="https://keen-douhua-81d574.netlify.app/">View Project</a>
-                  </div>
-                </button>
+                <div className="cta-button group hover:bg-gray-400 text-black">
+                  <a href="https://keen-douhua-81d574.netlify.app/">View Project</a>
+                </div>
+              </button>
               <p className="text-white-50 md:text-xl">
                 An app built with React Js, Express, Node, & TailwindCSS for a fast,
                 user-friendly experience.
@@ -74,26 +70,31 @@ const AppShowcase = () => {
                 <img
                   src="/images/jobPortal.png"
                   alt="Online Job Portal"
+                  loading="lazy"
                 />
               </div>
               <h2>Online Job Platform</h2>
               <button type="button">
-                  <div className="cta-button group hover:bg-gray-400 text-black">
-                    <a href="https://keen-douhua-81d574.netlify.app/">View Project</a>
-                  </div>
-                </button>
+                <div className="cta-button group hover:bg-gray-400 text-black">
+                  <a href="https://keen-douhua-81d574.netlify.app/">View Project</a>
+                </div>
+              </button>
             </div>
 
             <div className="project" ref={ycDirectoryRef}>
               <div className="image-wrapper bg-[#FFE7EB]">
-                <img src="/images/project3.png" alt="AI project" />
+                <img
+                  src="/images/project3.png"
+                  alt="AI project"
+                  loading="lazy"
+                />
               </div>
               <h2>AI app</h2>
               <button type="button">
-                  <div className="cta-button group hover:bg-gray-400 text-black">
-                    <a href="https://keen-douhua-81d574.netlify.app/">View Project</a>
-                  </div>
-                </button>
+                <div className="cta-button group hover:bg-gray-400 text-black">
+                  <a href="https://keen-douhua-81d574.netlify.app/">View Project</a>
+                </div>
+              </button>
             </div>
           </div>
         </div>

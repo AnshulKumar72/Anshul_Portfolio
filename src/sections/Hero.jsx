@@ -1,5 +1,6 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { useMemo } from "react";
 
 import AnimatedCounter from "../components/AnimatedCounter";
 import Button from "../components/Button";
@@ -7,7 +8,11 @@ import HeroExperience from "../components/models/hero_models/HeroExperience";
 import { words } from "../constants";
 
 const Hero = () => {
+  // Memoize the words data to prevent re-calculating it on every render
+  const memoizedWords = useMemo(() => words, []);
+
   useGSAP(() => {
+    // GSAP animation for hero text
     gsap.fromTo(
       ".hero-text h1",
       { y: 50, opacity: 0 },
@@ -17,8 +22,9 @@ const Hero = () => {
 
   return (
     <section id="hero" className="relative overflow-hidden">
+      {/* Lazy load background image */}
       <div className="absolute top-0 left-0 z-10">
-        <img src="/images/bg.png" alt="" />
+        <img src="/images/bg.png" alt="Background" loading="lazy" />
       </div>
 
       <div className="hero-layout">
@@ -30,14 +36,15 @@ const Hero = () => {
                 Shaping
                 <span className="slide">
                   <span className="wrapper">
-                    {words.map((word, index) => (
+                    {/* Memoized words rendering */}
+                    {memoizedWords.map((word, index) => (
                       <span
                         key={index}
                         className="flex items-center md:gap-3 gap-1 pb-2"
                       >
                         <img
                           src={word.imgPath}
-                          alt="person"
+                          alt={word.text}
                           className="xl:size-12 md:size-10 size-7 md:p-2 p-1 rounded-full bg-white-50"
                         />
                         <span>{word.text}</span>
@@ -51,8 +58,7 @@ const Hero = () => {
             </div>
 
             <p className="text-white-50 md:text-xl relative z-10 pointer-events-none">
-              Hi, I’m Anshul, a developer based in India with a passion for
-              code.
+              Hi, I’m Anshul, a developer based in India with a passion for code.
             </p>
 
             <Button
@@ -66,6 +72,7 @@ const Hero = () => {
         {/* RIGHT: 3D Model or Visual */}
         <figure>
           <div className="hero-3d-layout">
+            {/* Memoize HeroExperience component */}
             <HeroExperience />
           </div>
         </figure>

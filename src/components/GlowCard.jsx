@@ -1,35 +1,43 @@
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
+
+// Throttle function to limit how often the mousemove handler runs
+const throttle = (func, delay) => {
+  let lastCall = 0;
+  return function (...args) {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      return func(...args);
+    }
+  };
+};
 
 const GlowCard = ({ card, index, children }) => {
-  // refs for all the cards
   const cardRefs = useRef([]);
 
-  // when mouse moves over a card, rotate the glow effect
-  const handleMouseMove = (index) => (e) => {
-    // get the current card
-    const card = cardRefs.current[index];
-    if (!card) return;
+  // Create mouse move event handler with throttle to improve performance
+  const handleMouseMove = useCallback(
+    throttle((e) => {
+      const card = cardRefs.current[index];
+      if (!card) return;
 
-    // get the mouse position relative to the card
-    const rect = card.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left - rect.width / 2;
-    const mouseY = e.clientY - rect.top - rect.height / 2;
+      const rect = card.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left - rect.width / 2;
+      const mouseY = e.clientY - rect.top - rect.height / 2;
 
-    // calculate the angle from the center of the card to the mouse
-    let angle = Math.atan2(mouseY, mouseX) * (180 / Math.PI);
+      let angle = Math.atan2(mouseY, mouseX) * (180 / Math.PI);
+      angle = (angle + 360) % 360;
 
-    // adjust the angle so that it's between 0 and 360
-    angle = (angle + 360) % 360;
+      // Using CSS variables directly for smoother rendering
+      card.style.setProperty("--start", angle + 60);
+    }, 16), // Throttling to ~60 FPS (16ms interval)
+    [index]
+  );
 
-    // set the angle as a CSS variable
-    card.style.setProperty("--start", angle + 60);
-  };
-
-  // return the card component with the mouse move event
   return (
     <div
       ref={(el) => (cardRefs.current[index] = el)}
-      onMouseMove={handleMouseMove(index)}
+      onMouseMove={handleMouseMove}
       className="card card-border timeline-card rounded-xl p-10 mb-5 break-inside-avoid-column"
     >
       <div className="glow"></div>

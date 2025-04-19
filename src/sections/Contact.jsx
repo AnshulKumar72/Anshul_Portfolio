@@ -1,5 +1,5 @@
 import emailjs from "@emailjs/browser";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import TitleHeader from "../components/TitleHeader";
 import ContactExperience from "../components/models/contact/ContactExperience";
@@ -14,17 +14,21 @@ const Contact = () => {
   });
   const [alert, setAlert] = useState(null); // Alert state
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  };
+  // Initialize EmailJS outside the render cycle to avoid reinitialization
+  useEffect(() => {
+    emailjs.init(import.meta.env.VITE_APP_EMAILJS_PUBLIC_KEY);
+  }, []);
 
-  const handleSubmit = async (e) => {
+  // Memoizing handleChange to avoid unnecessary re-renders
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setForm((prevForm) => ({ ...prevForm, [name]: value }));
+  }, []);
+
+  // Memoizing handleSubmit to avoid unnecessary re-renders
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setLoading(true); // Show loading state
-
-    // Initialize EmailJS with the public key (required)
-    emailjs.init(import.meta.env.VITE_APP_EMAILJS_PUBLIC_KEY);
 
     try {
       const response = await emailjs.sendForm(
@@ -54,7 +58,7 @@ const Contact = () => {
     } finally {
       setLoading(false); // Always stop loading, even on error
     }
-  };
+  }, [form]);
 
   return (
     <section id="contact" className="flex-center section-padding">
@@ -67,9 +71,7 @@ const Contact = () => {
         {/* Alert Section */}
         {alert && (
           <div
-            className={`alert ${
-              alert.type === "success" ? "alert-success" : "alert-error"
-            }`}
+            className={`alert ${alert.type === "success" ? "alert-success" : "alert-error"}`}
           >
             {alert.message}
           </div>
